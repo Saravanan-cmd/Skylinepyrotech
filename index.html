@@ -1,1244 +1,617 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invoice Generator</title>
+  <meta charset="UTF-8">
+  <title>Invoice Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
-
-<style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #120b2e, #24104f 55%, #0b1738);
-    color: #fff;
-    padding: 20px;
-}
-
-.container {
-    max-width: 1200px;
-    margin: auto;
-}
-
-.company-header {
-    background: linear-gradient(135deg, #24104f, #4b1d7a, #b8860b);
-    padding: 25px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
-
-.company-header h1 {
-    margin: 0;
-    font-size: 32px;
-    letter-spacing: 2px;
-}
-
-.company-header p {
-    margin: 8px 0 0;
-    font-size: 14px;
-    letter-spacing: 1px;
-}
-
-.form-section {
-    background: rgba(255,255,255,0.08);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-}
-
-.form-row {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.form-group {
-    flex: 1;
-    min-width: 200px;
-}
-
-label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-}
-
-input,
-select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    font-size: 14px;
-}
-
-button {
-    border: none;
-    padding: 11px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    margin: 5px;
-}
-
-.btn-add {
-    background: #22c55e;
-    color: #fff;
-}
-
-.btn-pdf {
-    background: #f59e0b;
-    color: #fff;
-}
-
-.btn-save {
-    background: #3b82f6;
-    color: #fff;
-}
-
-.btn-load {
-    background: #8b5cf6;
-    color: #fff;
-}
-
-.btn-remove {
-    background: #ef4444;
-    color: #fff;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: #fff;
-    color: #111;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-th {
-    background: #24104f;
-    color: #fff;
-    padding: 10px;
-}
-
-td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-}
-
-td input,
-td select {
-    border: 1px solid #ccc;
-    color: #111;
-}
-
-.total-section {
-    text-align: right;
-    margin-top: 20px;
-    background: rgba(255,255,255,0.08);
-    padding: 15px;
-    border-radius: 10px;
-}
-
-.total-section h2 {
-    margin: 5px 0;
-}
-
-.actions {
-    text-align: center;
-    margin-top: 20px;
-}
-
-@media(max-width: 768px) {
     body {
-        padding: 10px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: linear-gradient(135deg, #120b2e, #24104f 55%, #0b1738);
+      color: #172033;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1250px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 18px 55px rgba(0,0,0,.30);
+    }
+
+    .company-header {
+      text-align: center;
+      padding: 24px 20px 18px;
+      background: linear-gradient(135deg, #24104f, #4b1d7a, #b8860b);
+      color: #fff;
     }
 
     .company-header h1 {
-        font-size: 24px;
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 2px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .company-header .tagline {
+      margin-top: 7px;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      opacity: .9;
+    }
+
+    .content { padding: 24px; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      color: #30204f;
+      margin-bottom: 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d5cbe6;
+      border-radius: 8px;
+      background: #fbfaff;
+      font: inherit;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #7b3fb6;
+      box-shadow: 0 0 0 3px rgba(123,63,182,.12);
+    }
+
+    .customer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid #ded7ea;
     }
 
     table {
-        font-size: 12px;
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+      margin: 0;
     }
 
-    th,
+    th {
+      background: #3b1768;
+      color: white;
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 13px;
+    }
+
     td {
-        padding: 5px;
+      border: 1px solid #e5dfef;
+      padding: 7px;
+      text-align: center;
+      background: #fff;
     }
-}
-</style>
+
+    tbody tr:nth-child(even) td { background: #faf8fd; }
+
+    .btn {
+      margin-top: 15px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border: 0;
+      border-radius: 8px;
+      background: #4b1d7a;
+      color: white;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .btn:hover { background: #321052; transform: translateY(-1px); }
+
+    .btn.secondary { background: #b8860b; }
+    .btn.danger { background: #a52a2a; margin-top: 0; padding: 7px 11px; }
+
+    .total-card {
+      margin-top: 20px;
+      padding: 15px 18px;
+      border-radius: 10px;
+      background: #f5effc;
+      border-left: 5px solid #b8860b;
+      text-align: right;
+    }
+
+    .total-card h3 { margin: 0; color: #3b1768; }
+
+    .saved-section {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #e2dced;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 10px; }
+      .content { padding: 14px; }
+      .customer-grid { grid-template-columns: 1fr; }
+      .company-header h1 { font-size: 23px; }
+    }
+  </style>
 </head>
-
 <body>
-
-<div class="container">
-
-    <div class="company-header">
-        <h1>SKYLINE PYROTECH</h1>
-        <p>CRACKERS • FIREWORKS • ESTIMATE</p>
-    </div>
-
-    <div class="form-section">
-
-        <div class="form-row">
-
-            <div class="form-group">
-                <label>Customer Name</label>
-                <input type="text" id="customer" placeholder="Enter customer name">
-            </div>
-
-            <div class="form-group">
-                <label>Address</label>
-                <input type="text" id="address" placeholder="Enter address">
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="form-section">
-
-        <table id="invoiceTable">
-
-            <thead>
-                <tr>
-                    <th>S.No</th>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Rate</th>
-                    <th>Discount</th>
-                    <th>Final Rate</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody>
-            </tbody>
-
-        </table>
-
-        <div style="text-align:center; margin-top:15px;">
-            <button class="btn-add" onclick="addRow()">+ Add Product</button>
-        </div>
-
-    </div>
-
-    <div class="total-section">
-
-        <h2>Grand Total: ₹ <span id="grandTotal">0.00</span></h2>
-
-    </div>
-
-    <div class="actions">
-
-        <button class="btn-pdf" onclick="generatePDF()">Generate PDF</button>
-
-        <button class="btn-save" onclick="saveBill()">Save Bill</button>
-
-        <button class="btn-load" onclick="loadBill()">Load Bill</button>
-
-    </div>
-
-</div>
-
-<script>
-
-const products = [
-
-    {name:"10 CM ELECTRIC SPARKLERS", rate:36},
-    {name:"10 CM COLOR SPARKLERS", rate:40},
-    {name:"10 CM GREEN SPARKLERS", rate:44},
-    {name:"10 CM RED SPARKLERS", rate:48},
-    {name:"10 CM GOLD SPARKLERS", rate:50},
-    {name:"10 CM CRACKLING SPARKLERS", rate:55},
-    {name:"15 CM ELECTRIC SPARKLERS", rate:60},
-    {name:"15 CM COLOR SPARKLERS", rate:65},
-    {name:"15 CM GREEN SPARKLERS", rate:70},
-    {name:"15 CM RED SPARKLERS", rate:75},
-    {name:"15 CM GOLD SPARKLERS", rate:80},
-    {name:"15 CM CRACKLING SPARKLERS", rate:85},
-    {name:"30 CM ELECTRIC SPARKLERS", rate:110},
-    {name:"30 CM COLOR SPARKLERS", rate:120},
-    {name:"30 CM GREEN SPARKLERS", rate:125},
-    {name:"30 CM RED SPARKLERS", rate:130},
-    {name:"30 CM GOLD SPARKLERS", rate:135},
-    {name:"30 CM CRACKLING SPARKLERS", rate:140},
-    {name:"50 CM ELECTRIC SPARKLERS", rate:180},
-    {name:"50 CM COLOR SPARKLERS", rate:190},
-    {name:"50 CM GREEN SPARKLERS", rate:200},
-    {name:"50 CM RED SPARKLERS", rate:210},
-    {name:"50 CM GOLD SPARKLERS", rate:220},
-    {name:"50 CM CRACKLING SPARKLERS", rate:230},
-
-    {name:"ATOM BOMB", rate:40},
-    {name:"HYDRO BOMB", rate:50},
-    {name:"KING BOMB", rate:60},
-    {name:"SUPER BOMB", rate:70},
-    {name:"DIGITAL BOMB", rate:80},
-    {name:"GOLD BOMB", rate:90},
-
-    {name:"GROUND CHAKKAR", rate:35},
-    {name:"GROUND CHAKKAR DELUXE", rate:50},
-    {name:"GROUND CHAKKAR SPECIAL", rate:65},
-    {name:"GROUND CHAKKAR COLOUR", rate:75},
-    {name:"GROUND CHAKKAR CRACKLING", rate:90},
-
-    {name:"FLOWER POT SMALL", rate:70},
-    {name:"FLOWER POT BIG", rate:100},
-    {name:"FLOWER POT SPECIAL", rate:130},
-    {name:"FLOWER POT DELUXE", rate:160},
-    {name:"FLOWER POT COLOUR", rate:180},
-
-    {name:"ROCKET SMALL", rate:80},
-    {name:"ROCKET BIG", rate:120},
-    {name:"ROCKET SPECIAL", rate:150},
-    {name:"ROCKET DELUXE", rate:180},
-    {name:"ROCKET COLOUR", rate:200},
-
-    {name:"LAXMI BOMB", rate:50},
-    {name:"LAXMI DELUXE BOMB", rate:70},
-    {name:"LAXMI SPECIAL BOMB", rate:90},
-    {name:"LAXMI GOLD BOMB", rate:110},
-
-    {name:"BIJILI SMALL", rate:30},
-    {name:"BIJILI BIG", rate:40},
-    {name:"BIJILI SPECIAL", rate:50},
-    {name:"BIJILI DELUXE", rate:60},
-
-    {name:"100 WALA", rate:120},
-    {name:"200 WALA", rate:220},
-    {name:"300 WALA", rate:320},
-    {name:"500 WALA", rate:520},
-    {name:"1000 WALA", rate:1000},
-
-    {name:"ATOM 10 SHOTS", rate:100},
-    {name:"ATOM 20 SHOTS", rate:180},
-    {name:"ATOM 30 SHOTS", rate:250},
-    {name:"ATOM 60 SHOTS", rate:450},
-    {name:"ATOM 120 SHOTS", rate:850},
-
-    {name:"7 SHOTS", rate:80},
-    {name:"12 SHOTS", rate:120},
-    {name:"25 SHOTS", rate:230},
-    {name:"30 SHOTS", rate:280},
-    {name:"60 SHOTS", rate:500},
-    {name:"120 SHOTS", rate:950},
-
-    {name:"COLOR SMOKE", rate:80},
-    {name:"SMOKE BALL", rate:60},
-    {name:"SMOKE FOUNTAIN", rate:100},
-
-    {name:"SPINNING WHEEL", rate:90},
-    {name:"MUSIC WHEEL", rate:120},
-    {name:"COLOUR WHEEL", rate:150},
-
-    {name:"MAGIC WHIP", rate:100},
-    {name:"MAGIC WHIP DELUXE", rate:150},
-    {name:"MAGIC WHIP SPECIAL", rate:200},
-
-    {name:"PAPER CAPS", rate:20},
-    {name:"ROLL CAPS", rate:25},
-    {name:"TOY PISTOL CAPS", rate:30},
-
-    {name:"MEGA ROCKET", rate:250},
-    {name:"SUPER ROCKET", rate:300},
-    {name:"KING ROCKET", rate:350},
-
-    {name:"FANCY ROCKET", rate:400},
-    {name:"FANCY FLOWER POT", rate:300},
-    {name:"FANCY CHAKKAR", rate:250},
-
-    {name:"COLOUR MATCH", rate:40},
-    {name:"COLOUR TORCH", rate:50},
-    {name:"MAGIC CANDLE", rate:60},
-    {name:"BIRTHDAY CANDLE", rate:50},
-
-    {name:"7 CM SPARKLER", rate:30},
-    {name:"7 CM COLOR SPARKLER", rate:35},
-    {name:"7 CM GREEN SPARKLER", rate:38},
-    {name:"7 CM RED SPARKLER", rate:40},
-
-    {name:"CRACKLING BALL", rate:80},
-    {name:"CRACKLING FLOWER POT", rate:120},
-    {name:"CRACKLING ROCKET", rate:150},
-
-    {name:"RAINBOW FOUNTAIN", rate:180},
-    {name:"RAINBOW POT", rate:220},
-    {name:"RAINBOW ROCKET", rate:250},
-
-    {name:"MAGIC FOUNTAIN", rate:200},
-    {name:"MAGIC POT", rate:250},
-    {name:"MAGIC ROCKET", rate:300},
-
-    {name:"SILVER RAIN", rate:150},
-    {name:"GOLD RAIN", rate:180},
-    {name:"COLOUR RAIN", rate:200},
-
-    {name:"PARACHUTE", rate:100},
-    {name:"HELICOPTER", rate:120},
-    {name:"BUTTERFLY", rate:100},
-
-    {name:"TWINKLING STAR", rate:80},
-    {name:"STAR LIGHT", rate:100},
-    {name:"STAR FOUNTAIN", rate:150},
-
-    {name:"MORNING GLORY", rate:180},
-    {name:"EVENING GLORY", rate:200},
-    {name:"NIGHT GLORY", rate:220},
-
-    {name:"COLOUR BALL", rate:80},
-    {name:"COLOUR BOMB", rate:90},
-    {name:"COLOUR FOUNTAIN", rate:150},
-
-    {name:"SPECIAL SHOT", rate:300},
-    {name:"DELUXE SHOT", rate:400},
-    {name:"PREMIUM SHOT", rate:500},
-
-    {name:"FANCY SHOT", rate:350},
-    {name:"MEGA SHOT", rate:450},
-    {name:"ULTRA SHOT", rate:550},
-
-    {name:"FESTIVAL SPECIAL", rate:600},
-    {name:"DIWALI SPECIAL", rate:700},
-    {name:"DIWALI DELUXE", rate:800},
-
-    {name:"FAMILY PACK", rate:1000},
-    {name:"FAMILY DELUXE PACK", rate:1500},
-    {name:"FAMILY PREMIUM PACK", rate:2000},
-
-    {name:"KIDS PACK", rate:500},
-    {name:"KIDS DELUXE PACK", rate:700},
-    {name:"KIDS PREMIUM PACK", rate:900},
-
-    {name:"COMBO PACK 1", rate:800},
-    {name:"COMBO PACK 2", rate:1000},
-    {name:"COMBO PACK 3", rate:1200},
-    {name:"COMBO PACK 4", rate:1500},
-    {name:"COMBO PACK 5", rate:2000},
-
-    {name:"GRAND COMBO", rate:2500},
-    {name:"MEGA COMBO", rate:3000},
-    {name:"ULTRA COMBO", rate:4000},
-
-    {name:"ROYAL COMBO", rate:5000},
-    {name:"KING COMBO", rate:6000},
-    {name:"EMPEROR COMBO", rate:7500},
-
-    {name:"SPECIAL BOX", rate:1000},
-    {name:"DELUXE BOX", rate:1500},
-    {name:"PREMIUM BOX", rate:2000},
-    {name:"ROYAL BOX", rate:3000},
-
-    {name:"SKY SHOT", rate:400},
-    {name:"SKY KING", rate:500},
-    {name:"SKY QUEEN", rate:550},
-    {name:"SKY STAR", rate:600},
-
-    {name:"THUNDER", rate:200},
-    {name:"THUNDER KING", rate:300},
-    {name:"THUNDER QUEEN", rate:350},
-
-    {name:"LIGHTNING", rate:250},
-    {name:"LIGHTNING KING", rate:350},
-    {name:"LIGHTNING QUEEN", rate:400},
-
-    {name:"VOLCANO", rate:180},
-    {name:"VOLCANO KING", rate:250},
-    {name:"VOLCANO QUEEN", rate:300},
-
-    {name:"DRAGON", rate:300},
-    {name:"DRAGON KING", rate:400},
-    {name:"DRAGON QUEEN", rate:450},
-
-    {name:"TIGER", rate:250},
-    {name:"TIGER KING", rate:350},
-    {name:"TIGER QUEEN", rate:400},
-
-    {name:"LION", rate:300},
-    {name:"LION KING", rate:400},
-    {name:"LION QUEEN", rate:450},
-
-    {name:"EAGLE", rate:350},
-    {name:"EAGLE KING", rate:450},
-    {name:"EAGLE QUEEN", rate:500},
-
-    {name:"PHOENIX", rate:400},
-    {name:"PHOENIX KING", rate:500},
-    {name:"PHOENIX QUEEN", rate:600},
-
-    {name:"DIAMOND", rate:500},
-    {name:"DIAMOND KING", rate:650},
-    {name:"DIAMOND QUEEN", rate:750},
-
-    {name:"PLATINUM", rate:600},
-    {name:"PLATINUM KING", rate:750},
-    {name:"PLATINUM QUEEN", rate:850},
-
-    {name:"GOLDEN", rate:500},
-    {name:"GOLDEN KING", rate:650},
-    {name:"GOLDEN QUEEN", rate:750},
-
-    {name:"SILVER", rate:400},
-    {name:"SILVER KING", rate:500},
-    {name:"SILVER QUEEN", rate:600},
-
-    {name:"CRYSTAL", rate:450},
-    {name:"CRYSTAL KING", rate:550},
-    {name:"CRYSTAL QUEEN", rate:650},
-
-    {name:"RAINBOW", rate:500},
-    {name:"RAINBOW KING", rate:650},
-    {name:"RAINBOW QUEEN", rate:750},
-
-    {name:"FIRE KING", rate:400},
-    {name:"FIRE QUEEN", rate:500},
-    {name:"FIRE STAR", rate:600},
-
-    {name:"SUPER STAR", rate:450},
-    {name:"MEGA STAR", rate:550},
-    {name:"ULTRA STAR", rate:650},
-
-    {name:"FANCY STAR", rate:500},
-    {name:"ROYAL STAR", rate:650},
-    {name:"EMPEROR STAR", rate:800},
-
-    {name:"CELEBRATION PACK", rate:1000},
-    {name:"GRAND CELEBRATION", rate:1500},
-    {name:"ROYAL CELEBRATION", rate:2000},
-
-    {name:"SPECIAL DIWALI BOX", rate:2500},
-    {name:"DELUXE DIWALI BOX", rate:3500},
-    {name:"PREMIUM DIWALI BOX", rate:5000}
-
-];
-
-function addRow() {
-
-    let table = document.getElementById("invoiceTable").getElementsByTagName("tbody")[0];
-
-    let row = table.insertRow();
-
-    let index = table.rows.length;
-
-    let productOptions = "";
-
-    products.forEach((p, i) => {
-        productOptions += `<option value="${i}">${p.name}</option>`;
-    });
-
-    row.innerHTML = `
-        <td>${index}</td>
-
-        <td>
-            <select onchange="updateRow(this)">
-                ${productOptions}
-            </select>
-        </td>
-
-        <td>
-            <input type="number" value="1" min="1" onchange="updateRow(this)">
-        </td>
-
-        <td class="rate">0.00</td>
-
-        <td class="discount">90%</td>
-
-        <td class="finalRate">0.00</td>
-
-        <td class="rowTotal">0.00</td>
-
-        <td>
-            <button class="btn-remove" onclick="removeRow(this)">
-                Remove
-            </button>
-        </td>
-    `;
-
-    updateRow(row.querySelector("select"));
-
-}
-
-function updateRow(element) {
-
-    let row = element.closest("tr");
-
-    let select = row.querySelector("select");
-
-    let qtyInput = row.querySelector("input");
-
-    let product = products[select.value];
-
-    let qty = parseFloat(qtyInput.value) || 0;
-
-    let rate = product.rate;
-
-    let discountPercent = 90;
-
-    let finalRate = rate * (100 - discountPercent) / 100;
-
-    let total = finalRate * qty;
-
-    row.querySelector(".rate").innerText = rate.toFixed(2);
-
-    row.querySelector(".discount").innerText = discountPercent + "%";
-
-    row.querySelector(".finalRate").innerText = finalRate.toFixed(2);
-
-    row.querySelector(".rowTotal").innerText = total.toFixed(2);
-
-    updateTotal();
-}
-
-function updateTotal() {
-
-    let total = 0;
-
-    let rows = document.querySelectorAll("#invoiceTable tbody tr");
-
-    rows.forEach(row => {
-
-        total += parseFloat(row.querySelector(".rowTotal").innerText) || 0;
-
-    });
-
-    document.getElementById("grandTotal").innerText = total.toFixed(2);
-
-}
-
-function updateGrandTotal() {
-    updateTotal();
-}
-
-function removeRow(button) {
-
-    button.closest("tr").remove();
-
-    let rows = document.querySelectorAll("#invoiceTable tbody tr");
-
-    rows.forEach((row, index) => {
-
-        row.cells[0].innerText = index + 1;
-
-    });
-
-    updateTotal();
-
-}
-
-function generateInvoiceNumber() {
-
-    let now = new Date();
-
-    let year = now.getFullYear();
-
-    let month = String(now.getMonth() + 1).padStart(2, "0");
-
-    let day = String(now.getDate()).padStart(2, "0");
-
-    let time = String(now.getHours()).padStart(2, "0") +
-               String(now.getMinutes()).padStart(2, "0") +
-               String(now.getSeconds()).padStart(2, "0");
-
-    return "SP-" + year + month + day + "-" + time;
-
-}
-
-function generatePDF() {
-
-    const { jsPDF } = window.jspdf;
-
-    let doc = new jsPDF();
-
-    let customer =
-        document.getElementById("customer").value || "Unknown";
-
-    let address =
-        document.getElementById("address").value || "N/A";
-
-    let grandTotal =
-        document.getElementById("grandTotal").innerText;
-
-    let invoiceNo =
-        generateInvoiceNumber();
-
-    let today =
-        new Date().toLocaleDateString();
-
-    /*
-    ============================================================
-       PDF OUTPUT DESIGN ONLY
-       SKYLINE PYROTECH
-    ============================================================
-    */
-
-    // ----------------------------------------------------------
-    // TOP BRAND HEADER
-    // ----------------------------------------------------------
-
-    doc.setFillColor(23, 37, 84);
-
-    doc.rect(
-        0,
-        0,
-        210,
-        28,
-        "F"
-    );
-
-    // Gold company name
-
-    doc.setTextColor(
-        245,
-        158,
-        11
-    );
-
-    doc.setFontSize(18);
-
-    doc.setFont(
-        undefined,
-        "bold"
-    );
-
-    doc.text(
-        "SKYLINE PYROTECH",
-        105,
-        10,
-        {
-            align: "center"
-        }
-    );
-
-    // Subtitle
-
-    doc.setTextColor(
-        255,
-        255,
-        255
-    );
-
-    doc.setFontSize(10);
-
-    doc.setFont(
-        undefined,
-        "normal"
-    );
-
-    doc.text(
-        "CRACKERS • FIREWORKS",
-        105,
-        17,
-        {
-            align: "center"
-        }
-    );
-
-    // ----------------------------------------------------------
-    // ESTIMATE TITLE
-    // ----------------------------------------------------------
-
-    doc.setTextColor(
-        23,
-        37,
-        84
-    );
-
-    doc.setFontSize(15);
-
-    doc.setFont(
-        undefined,
-        "bold"
-    );
-
-    doc.text(
-        "ESTIMATE",
-        105,
-        36,
-        {
-            align: "center"
-        }
-    );
-
-    // ----------------------------------------------------------
-    // CUSTOMER DETAILS
-    // ----------------------------------------------------------
-
-    doc.setFontSize(11);
-
-    doc.setFont(
-        undefined,
-        "normal"
-    );
-
-    doc.setTextColor(
-        0,
-        0,
-        0
-    );
-
-    doc.text(
-        "To: " + customer,
-        14,
-        47
-    );
-
-    doc.text(
-        "Address: " + address,
-        14,
-        54
-    );
-
-    doc.text(
-        "Estimate No: " + invoiceNo,
-        150,
-        47
-    );
-
-    doc.text(
-        "Date: " + today,
-        150,
-        55
-    );
-
-    // ----------------------------------------------------------
-    // BUILD TABLE DATA
-    // ----------------------------------------------------------
-
-    let rows = [];
-
-    let table =
-        document.getElementById("invoiceTable");
-
-    for (
-        let i = 1;
-        i < table.rows.length;
-        i++
-    ) {
-
-        let cells =
-            table.rows[i].cells;
-
-        let productName =
-            cells[1]
-            .children[0]
-            .value;
+  <div class="app">
+  <div class="company-header">
+    <h1>SKYLINE PYROTECH</h1>
+    <div class="tagline">CRACKERS • FIREWORKS • ESTIMATE</div>
+  </div>
+  <div class="content">
+
+  <label>Customer Name: <input type="text" id="customer"></label><br><br>
+  <label>Customer Address: <textarea id="address" rows="3"></textarea></label><br><br>
+
+  <table id="invoiceTable">
+    <tr>
+      <th>Product</th>
+      <th>Qty</th>
+      <th>Rate</th>
+      <th>Discount</th>
+      <th>Final Rate</th>
+      <th>Total</th>
+      <th>Action</th>
+    </tr>
+  </table>
+  <button class="btn" onclick="addRow()">+ Add Product</button>
+
+  <h3>Grand Total: <span id="grandTotal">0</span></h3>
+  <button class="btn" onclick="generatePDF()">Download PDF</button>
+  <button class="btn" onclick="saveBill()">Save Bill</button>
+
+  <h3>Saved Bills</h3>
+  <select id="savedBills" onchange="loadBill(this.value)">
+    <option value="">-- Select a saved bill --</option>
+  </select>
+
+  <script>
+    const products = [
+      { code:'1', name:"2 3/4'' Kuruvi Crackers", rate:80, discount:72, finalRate:8 },
+      { code:'2', name:'3 1/2" Deluxe Lakshmi', rate:120, discount:108, finalRate:12 },
+      { code:'3', name:'4" Laskhmi', rate:180, discount:162, finalRate:18 },
+      { code:'4', name:"4'' Hulk", rate:180, discount:162, finalRate:18 },
+      { code:'5', name:'4" Deluxe Laskhmi', rate:270, discount:243, finalRate:27 },
+      { code:'6', name:'4" Tiger Deluxe', rate:270, discount:243, finalRate:27 },
+      { code:'7', name:'4" Gold Lakshmi', rate:300, discount:270, finalRate:30 },
+      { code:'8', name:"4'' Eagle", rate:300, discount:270, finalRate:30 },
+      { code:'9', name:"5'' Fighter Super Deluxe (20ply)", rate:550, discount:495, finalRate:55 },
+      { code:'10', name:'50 Red Bijili Crackers', rate:200, discount:180, finalRate:20 },
+      { code:'11', name:'50 Stripped Bijili Crackers', rate:220, discount:198, finalRate:22 },
+      { code:'12', name:'100 Red Bijili Crackers', rate:380, discount:342, finalRate:38 },
+      { code:'13', name:'100 Stripped Bijli Crackers', rate:420, discount:378, finalRate:42 },
+      { code:'14', name:'Flower Pots Big', rate:650, discount:585, finalRate:65 },
+      { code:'15', name:'Flower Pots Special', rate:950, discount:855, finalRate:95 },
+      { code:'16', name:'Flower Pots Asoka / Giant', rate:1250, discount:1125, finalRate:125 },
+      { code:'17', name:'Flower Pots Deluxe(5 PCs)', rate:1600, discount:1440, finalRate:160 },
+      { code:'18', name:'Flower Pots Super Deluxe(2 PCs)', rate:1300, discount:1170, finalRate:130 },
+      { code:'19', name:'Colour Koti', rate:1800, discount:1620, finalRate:180 },
+      { code:'20', name:'Colour Koti Gold Deluxe', rate:2500, discount:2250, finalRate:250 },
+      { code:'21', name:'Mothers Rangeela', rate:1600, discount:1440, finalRate:160 },
+      { code:'22', name:'Mothers Luckey (Red&Green)', rate:1750, discount:1575, finalRate:175 },
+      { code:'23', name:'Ground Chakkar Big (10 Pcs)', rate:400, discount:360, finalRate:40 },
+      { code:'24', name:'Ground Chakkar Big (25 Pcs)', rate:500, discount:450, finalRate:50 },
+      { code:'25', name:'Ground Chakkar Asoka', rate:600, discount:540, finalRate:60 },
+      { code:'26', name:'Ground Chakkar Special', rate:750, discount:675, finalRate:75 },
+      { code:'27', name:'Ground Chakkar Deluxe', rate:1200, discount:1080, finalRate:120 },
+      { code:'28', name:'Ground Chakkar Speacial (Plastic Wheel)', rate:900, discount:810, finalRate:90 },
+      { code:'29', name:'Ground Chakkar Deluxe (Plastic Wheel)', rate:1300, discount:1170, finalRate:130 },
+      { code:'30', name:'Wire Chakkar Deluxe', rate:1500, discount:1350, finalRate:150 },
+      { code:'31', name:'10 Cm Electric Sparklers', rate:150, discount:135, finalRate:15 },
+      { code:'32', name:'10 Cm Colour Sparklers', rate:180, discount:162, finalRate:18 },
+      { code:'33', name:'10 Cm Green Sparklers', rate:200, discount:180, finalRate:20 },
+      { code:'34', name:'10 Cm Red Sparklers', rate:220, discount:198, finalRate:22 },
+      { code:'35', name:'10 Cm Silver Drops Sparklers', rate:250, discount:225, finalRate:25 },
+      { code:'36', name:'12 Cm Electric Sparklers', rate:230, discount:207, finalRate:23 },
+      { code:'37', name:'12 Cm Crackling Sparklers', rate:250, discount:225, finalRate:25 },
+      { code:'38', name:'12 Cm Colour Sparklers', rate:250, discount:225, finalRate:25 },
+      { code:'39', name:'12 Cm Green Sparklers', rate:270, discount:243, finalRate:27 },
+      { code:'40', name:'12 Cm Red Sparklers', rate:300, discount:270, finalRate:30 },
+      { code:'41', name:'15 Cm Electric Sparklers', rate:300, discount:270, finalRate:30 },
+      { code:'42', name:'15 Cm Crackling Sparklers', rate:350, discount:315, finalRate:35 },
+      { code:'43', name:'15 Cm Colour Sparklers', rate:350, discount:315, finalRate:35 },
+      { code:'44', name:'15 Cm Green Sparklers', rate:400, discount:360, finalRate:40 },
+      { code:'45', name:'15 Cm Red Sparklers', rate:450, discount:405, finalRate:45 },
+      { code:'46', name:'15 Cm Silver Drops Sparklers', rate:600, discount:540, finalRate:60 },
+      { code:'47', name:'15 Cm 5 In 1 Sparklers', rate:2600, discount:2340, finalRate:260 },
+      { code:'48', name:'30 Cm Electric Sparklers', rate:300, discount:270, finalRate:30 },
+      { code:'49', name:'30 Cm Crackling Sparklers', rate:350, discount:315, finalRate:35 },
+      { code:'50', name:'30 Cm Colour Sparklers', rate:350, discount:315, finalRate:35 },
+      { code:'51', name:'30 Cm Green Sparklers', rate:400, discount:360, finalRate:40 },
+      { code:'52', name:'30 Cm Red Sparklers', rate:450, discount:405, finalRate:45 },
+      { code:'53', name:'50 Cm Electric Sparklers', rate:1500, discount:1350, finalRate:150 },
+      { code:'54', name:'50 Cm Crackling Sparklers', rate:1600, discount:1440, finalRate:160 },
+      { code:'55', name:'50 Cm Colour Sparklers', rate:1600, discount:1440, finalRate:160 },
+      { code:'56', name:'50 Cm Multi Mix Sparklers', rate:1700, discount:1530, finalRate:170 },
+      { code:'57', name:'Rotating Sparklers', rate:1800, discount:1620, finalRate:180 },
+      { code:'58', name:'Magic Fountain (Gold)', rate:1000, discount:900, finalRate:100 },
+      { code:'59', name:'Mountain Window Type (5 Colours)', rate:1400, discount:1260, finalRate:140 },
+      { code:'60', name:'Amazing Mini 5 In 1', rate:1400, discount:1260, finalRate:140 },
+      { code:'61', name:'Amazing Bada 5 In 1', rate:2000, discount:1800, finalRate:200 },
+      { code:'62', name:'Helicoptor', rate:1100, discount:990, finalRate:110 },
+      { code:'63', name:'Peacock Feather', rate:900, discount:810, finalRate:90 },
+      { code:'64', name:'Kinder Pop', rate:2500, discount:2250, finalRate:250 },
+      { code:'65', name:'Tricolour Fountain', rate:2300, discount:2070, finalRate:230 },
+      { code:'66', name:'Tin Fountain', rate:950, discount:855, finalRate:95 },
+      { code:'67', name:'Jee Boom Baa (Paper Fountain)', rate:3600, discount:3240, finalRate:360 },
+      { code:'68', name:'Galaxy', rate:1300, discount:1170, finalRate:130 },
+      { code:'69', name:'Water Queen', rate:1600, discount:1440, finalRate:160 },
+      { code:'70', name:'Wonder Peafowl', rate:1000, discount:900, finalRate:100 },
+      { code:'71', name:'Mayur (Mega Peacock)', rate:1500, discount:1350, finalRate:150 },
+      { code:'72', name:'Peacock Silver (5 Pipe)', rate:1400, discount:1260, finalRate:140 },
+      { code:'73', name:'Bada Peacock', rate:3600, discount:3240, finalRate:360 },
+      { code:'74', name:'Mothers Mayil (Metalic)', rate:4500, discount:4050, finalRate:450 },
+      { code:'75', name:'I Cone (Hand Play)', rate:1800, discount:1620, finalRate:180 },
+      { code:'76', name:'Mini Siren', rate:1650, discount:1485, finalRate:165 },
+      { code:'77', name:'Mega Siren', rate:1750, discount:1575, finalRate:175 },
+      { code:'78', name:'Mega Siren (Police)', rate:1200, discount:1080, finalRate:120 },
+      { code:'79', name:'King Star Fountain', rate:2600, discount:2340, finalRate:260 },
+      { code:'80', name:'Pyro Dance (Butterfly)', rate:1300, discount:1170, finalRate:130 },
+      { code:'81', name:'Butterfly', rate:1000, discount:900, finalRate:100 },
+      { code:'82', name:'Bambara', rate:1200, discount:1080, finalRate:120 },
+      { code:'83', name:'Blue Star Sil Slay', rate:400, discount:360, finalRate:40 },
+      { code:'84', name:'Mothers Chit Put', rate:700, discount:630, finalRate:70 },
+      { code:'85', name:'Mothers Kit Kat', rate:700, discount:630, finalRate:70 },
+      { code:'86', name:'Mothers Star Light', rate:800, discount:720, finalRate:80 },
+      { code:'87', name:'Ganga Jamuna', rate:800, discount:720, finalRate:80 },
+      { code:'88', name:'4 \* 4 Racing Wheel', rate:1500, discount:1350, finalRate:150 },
+      { code:'89', name:'Cat Rat / Tom & Jerry', rate:450, discount:405, finalRate:45 },
+      { code:'90', name:'Photo Flash', rate:700, discount:630, finalRate:70 },
+      { code:'91', name:'Selfie Stick', rate:700, discount:630, finalRate:70 },
+      { code:'92', name:'Jagajal', rate:4200, discount:3780, finalRate:420 },
+      { code:'93', name:'Jagajal Deluxe', rate:4200, discount:3780, finalRate:420 },
+      { code:'94', name:"Kunfu (Children's 1000 Sounds)", rate:700, discount:630, finalRate:70 },
+      { code:'95', name:"Kunfu Deluxe (Children's Mega 1000 Sounds)", rate:900, discount:810, finalRate:90 },
+      { code:'96', name:"I Am Lar (Children's 2000 Wala)", rate:1400, discount:1260, finalRate:140 },
+      { code:'97', name:"I Am Lar Deluxe (Children's Mega 2000 Wala)", rate:1700, discount:1530, finalRate:170 },
+      { code:'98', name:'Mini Magic Whip (Color Garland Mini)', rate:900, discount:810, finalRate:90 },
+      { code:'99', name:'Magic Whip (Colour Garland Childrens Special)', rate:1800, discount:1620, finalRate:180 },
+      { code:'100', name:'Alertlar (1000 Wala Mega Sound)', rate:1600, discount:1440, finalRate:160 },
+      { code:'101', name:'Jee Boom Baa (Mega Magic Tablet)', rate:1400, discount:1260, finalRate:140 },
+      { code:'102', name:'Pop Corn (Color KitKat)', rate:400, discount:360, finalRate:40 },
+      { code:'103', name:'New Seven Peacocks Colour', rate:1300, discount:1170, finalRate:130 },
+      { code:'104', name:'Assorted Cartoon', rate:300, discount:270, finalRate:30 },
+      { code:'105', name:'Black & White (OLA VEDI)', rate:2100, discount:1890, finalRate:210 },
+      { code:'106', name:'Magic Show', rate:1400, discount:1260, finalRate:140 },
+      { code:'107', name:'Mega Laptop (VIP 10 in 1)', rate:2200, discount:1980, finalRate:220 },
+      { code:'108', name:'2 Sound Crackers', rate:300, discount:270, finalRate:30 },
+      { code:'109', name:'28 Small Florals (Chorsa)', rate:150, discount:135, finalRate:15 },
+      { code:'110', name:'28 Big Florals (Giant)', rate:250, discount:225, finalRate:25 },
+      { code:'111', name:'56 Small Florals (Giant)', rate:450, discount:405, finalRate:45 },
+      { code:'112', name:'100 Wala', rate:450, discount:405, finalRate:45 },
+      { code:'113', name:'200 Wala', rate:850, discount:765, finalRate:85 },
+      { code:'114', name:'1000 Wala (Half Count)', rate:1600, discount:1440, finalRate:160 },
+      { code:'115', name:'2000 Wala (Half Count)', rate:3200, discount:2880, finalRate:320 },
+      { code:'116', name:'5000 Wala (Half Count)', rate:8000, discount:7200, finalRate:800 },
+      { code:'117', name:'10000 Wala (Half Count)', rate:16000, discount:14400, finalRate:1600 },
+      { code:'118', name:'1000 Wala (Medium Count)', rate:2250, discount:2025, finalRate:225 },
+      { code:'119', name:'2000 Wala (Medium Count)', rate:4500, discount:4050, finalRate:450 },
+      { code:'120', name:'5000 Wala (Medium Count)', rate:11250, discount:10125, finalRate:1125 },
+      { code:'121', name:'10000 Wala (Medium Count)', rate:22500, discount:20250, finalRate:2250 },
+      { code:'122', name:'1000 Wala (Full Count)', rate:3000, discount:2700, finalRate:300 },
+      { code:'123', name:'2000 Wala (Full Count)', rate:6000, discount:5400, finalRate:600 },
+      { code:'124', name:'5000 Wala (Full Count)', rate:15000, discount:13500, finalRate:1500 },
+      { code:'125', name:'10000 Wala (Full Count)', rate:30000, discount:27000, finalRate:3000 },
+      { code:'126', name:"1 1/2'' Twingling Star", rate:200, discount:180, finalRate:20 },
+      { code:'127', name:"4'' Twingling Star", rate:600, discount:540, finalRate:60 },
+      { code:'128', name:'Colour Twingling Star ( R,G,W Colour)', rate:2000, discount:1800, finalRate:200 },
+      { code:'129', name:'7" Small Pencil', rate:250, discount:225, finalRate:25 },
+      { code:'130', name:'Colour Pencil', rate:300, discount:270, finalRate:30 },
+      { code:'131', name:'Pencil Deluxe', rate:550, discount:495, finalRate:55 },
+      { code:'132', name:'Navarang Torch & Crackling (BlueStar)', rate:2200, discount:1980, finalRate:220 },
+      { code:'133', name:'Torch (3 Pcs)', rate:1500, discount:1350, finalRate:150 },
+      { code:'134', name:'Sharp Gun Shooter (2 Pcs)', rate:1600, discount:1440, finalRate:160 },
+      { code:'135', name:'MRF Bat', rate:1200, discount:1080, finalRate:120 },
+      { code:'136', name:'Gadayutham', rate:2000, discount:1800, finalRate:200 },
+      { code:'137', name:'Mantra Stick (Mini Lollipop)', rate:700, discount:630, finalRate:70 },
+      { code:'138', name:'Lolly Pop Multi Colour', rate:2000, discount:1800, finalRate:200 },
+      { code:'139', name:'Hand Shot (288 Candles)', rate:4800, discount:4320, finalRate:480 },
+      { code:'140', name:'Colour Crush Candles', rate:1400, discount:1260, finalRate:140 },
+      { code:'141', name:'Deluxe Bullet Bomb', rate:300, discount:270, finalRate:30 },
+      { code:'142', name:'Hydro Bomb', rate:800, discount:720, finalRate:80 },
+      { code:'143', name:'Goat Bomb (Mega 555 Bomb)', rate:1200, discount:1080, finalRate:120 },
+      { code:'144', name:'King Of King Bomb', rate:1200, discount:1080, finalRate:120 },
+      { code:'145', name:'Classic Bomb', rate:1300, discount:1170, finalRate:130 },
+      { code:'146', name:'Deluxe / Digital Bomb', rate:2150, discount:1935, finalRate:215 },
+      { code:'147', name:'Money Bank Big', rate:1950, discount:1755, finalRate:195 },
+      { code:'148', name:'Cylinder Colour Bomb', rate:1600, discount:1440, finalRate:160 },
+      { code:'149', name:'Paper Bomb ( 1/4 kg Adiyal)', rate:450, discount:405, finalRate:45 },
+      { code:'150', name:'Mega Paper Bomb (1/2 Kg Adiyal)', rate:900, discount:810, finalRate:90 },
+      { code:'151', name:'Bada Paper Bomb (1 Kg Adiyal)', rate:1800, discount:1620, finalRate:180 },
+      { code:'152', name:'Everest Rocket Bomb', rate:600, discount:540, finalRate:60 },
+      { code:'153', name:'Everest Lunik Rocket', rate:1000, discount:900, finalRate:100 },
+      { code:'154', name:'Whistling Rocket', rate:1900, discount:1710, finalRate:190 },
+      { code:'155', name:'Penda colour 5 In 1', rate:1600, discount:1440, finalRate:160 },
+      { code:'156', name:'Sky Shot', rate:1400, discount:1260, finalRate:140 },
+      { code:'157', name:'Sky Shot Crackling', rate:1550, discount:1395, finalRate:155 },
+      { code:'158', name:'7 Shots(5 Pcs)', rate:1300, discount:1170, finalRate:130 },
+      { code:'159', name:'Chotta Fancy', rate:380, discount:342, finalRate:38 },
+      { code:'160', name:'2" Fancy Single', rate:950, discount:855, finalRate:95 },
+      { code:'161', name:'2" Fancy (3 Pcs)', rate:2500, discount:2250, finalRate:250 },
+      { code:'162', name:'2" BlueStar Fancy Single', rate:1250, discount:1125, finalRate:125 },
+      { code:'163', name:'3 1/2" Fancy Single', rate:2700, discount:2430, finalRate:270 },
+      { code:'164', name:'3 1/2" Double Ball Fancy', rate:4200, discount:3780, finalRate:420 },
+      { code:'165', name:'4" Tin Fancy Single', rate:3800, discount:3420, finalRate:380 },
+      { code:'166', name:'4" Fancy Single', rate:3600, discount:3240, finalRate:360 },
+      { code:'167', name:'4" Fancy Double', rate:7200, discount:6480, finalRate:720 },
+      { code:'168', name:'4" Single Mothers (7 Step)', rate:4000, discount:3600, finalRate:400 },
+      { code:'169', name:'4" Niagra Falls', rate:3500, discount:3150, finalRate:350 },
+      { code:'170', name:'5" Fancy Single', rate:4200, discount:3780, finalRate:420 },
+      { code:'171', name:'5" Fancy (Double Piece)', rate:7600, discount:6840, finalRate:760 },
+      { code:'172', name:'12 Hexagon / Rang', rate:1500, discount:1350, finalRate:150 },
+      { code:'173', name:'12 Shot Square (R&G) (Blue Star)', rate:1600, discount:1440, finalRate:160 },
+      { code:'174', name:'12 Shot Deluxe Green & Yellow Box (Blue Star)', rate:1700, discount:1530, finalRate:170 },
+      { code:'175', name:'12 Slider Rider', rate:1700, discount:1530, finalRate:170 },
+      { code:'176', name:'15 Multi Colour Shots', rate:2200, discount:1980, finalRate:220 },
+      { code:'177', name:'25 Shot Square (Blue Star)', rate:3200, discount:2880, finalRate:320 },
+      { code:'178', name:'25 Multi Colour Shots', rate:3500, discount:3150, finalRate:350 },
+      { code:'179', name:'30 Multi Colour Shots', rate:3800, discount:3420, finalRate:380 },
+      { code:'180', name:'30 Multi Colour & Crackling (Blue Star)', rate:5000, discount:4500, finalRate:500 },
+      { code:'181', name:'50 Multi Colour Shots', rate:7000, discount:6300, finalRate:700 },
+      { code:'182', name:'60 Multi Colour Shots', rate:7600, discount:6840, finalRate:760 },
+      { code:'183', name:'60 Multi Colour & Crackling (Blue Star)', rate:9900, discount:8910, finalRate:990 },
+      { code:'184', name:'80 Multi Colour Shots(Bengaluru)', rate:10500, discount:9450, finalRate:1050 },
+      { code:'185', name:'100 Multi Colour Shots', rate:12600, discount:11340, finalRate:1260 },
+      { code:'186', name:'120 Multi Colour Shots', rate:15000, discount:13500, finalRate:1500 },
+      { code:'187', name:'160 Multi Colour Shots(Bulls)', rate:20000, discount:18000, finalRate:2000 },
+      { code:'188', name:'200 Multi Colour Shots', rate:24000, discount:21600, finalRate:2400 },
+      { code:'189', name:'240 Multi Colour Shots', rate:29000, discount:26100, finalRate:2900 },
+      { code:'190', name:'510 Multi Colour & Crackling Bluestar', rate:68400, discount:61560, finalRate:6840 },
+      { code:'191', name:'2" Fancy Setout', rate:7500, discount:6750, finalRate:750 },
+      { code:'192', name:'SKY DHAMAKA (10 \* 10) Shot', rate:32200, discount:28980, finalRate:3220 },
+      { code:'193', name:'CHOTTA SETOUT (48 SHOT WONDER SHOT)', rate:29600, discount:26640, finalRate:2960 },
+      { code:'194', name:'2" × 20 Shot', rate:18000, discount:16200, finalRate:1800 },
+      { code:'195', name:'2" × 25 Shot', rate:22000, discount:19800, finalRate:2200 },
+      { code:'196', name:'2" SETOUT 30 Shot', rate:33800, discount:30420, finalRate:3380 },
+      { code:'197', name:'2.75 SETOUT (30 SHOT POWER PACK)', rate:48500, discount:43650, finalRate:4850 },
+      { code:'198', name:'3" SETOUT (25 SHOT ULTRA PACK)', rate:57000, discount:51300, finalRate:5700 }
+    ];
+
+    function addRow(data = null) {
+      let table = document.getElementById("invoiceTable");
+      let row = table.insertRow(-1);
+
+      let options = products.map(p => `<option value="${p.name}">${p.name}</option>`).join("");
+
+      row.innerHTML = `
+        <td><select onchange="updateRow(this)"><option value="">Select</option>${options}</select></td>
+        <td><input type="number" value="1" oninput="updateTotal(this)"></td>
+        <td class="rate">0</td>
+        <td class="discount">0</td>
+        <td class="finalRate">0</td>
+        <td class="rowTotal">0</td>
+        <td><button onclick="removeRow(this)">X</button></td>
+      `;
+
+      if (data) {
+        let sel = row.cells[0].children[0];
+        sel.value = data.name;
+        updateRow(sel);
+        row.cells[1].children[0].value = data.qty;
+        updateTotal(row.cells[1].children[0]);
+      }
+    }
+
+    function updateRow(sel) {
+      let row = sel.parentElement.parentElement;
+      let product = products.find(p => p.name === sel.value);
+      if (product) {
+        row.querySelector(".rate").innerText = product.rate;
+        row.querySelector(".discount").innerText = product.discount;
+        row.querySelector(".finalRate").innerText = product.finalRate;
+        updateTotal(row.cells[1].children[0]);
+      }
+    }
+
+    function updateTotal(el) {
+      let row = el.parentElement.parentElement;
+      let qty = row.cells[1].children[0].value;
+      let finalRate = Number(row.querySelector(".finalRate").innerText);
+      let total = qty * finalRate;
+      row.querySelector(".rowTotal").innerText = total;
+      updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+      let totals = document.querySelectorAll(".rowTotal");
+      let sum = 0;
+      totals.forEach(t => sum += Number(t.innerText));
+      document.getElementById("grandTotal").innerText = sum;
+    }
+
+    function removeRow(btn) {
+      btn.parentElement.parentElement.remove();
+      updateGrandTotal();
+    }
+
+    function generateInvoiceNumber() {
+      let now = new Date();
+      return "INV-" + now.getFullYear().toString() +
+             (now.getMonth()+1).toString().padStart(2,'0') +
+             now.getDate().toString().padStart(2,'0') + "-" +
+             now.getHours().toString().padStart(2,'0') +
+             now.getMinutes().toString().padStart(2,'0') +
+             now.getSeconds().toString().padStart(2,'0');
+    }
+
+    function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      let doc = new jsPDF();
+
+      let customer = document.getElementById("customer").value || "Unknown";
+      let address = document.getElementById("address").value || "N/A";
+      let grandTotal = document.getElementById("grandTotal").innerText;
+      let invoiceNo = generateInvoiceNumber();
+      let today = new Date().toLocaleDateString();
+
+      // Header - SKYLINE PYROTECH branded PDF
+      // Dark navy header with gold accent
+      doc.setFillColor(23, 37, 84);
+      doc.rect(0, 0, 210, 28, "F");
+
+      doc.setTextColor(245, 158, 11);
+      doc.setFontSize(18);
+      doc.setFont(undefined, "bold");
+      doc.text("SKYLINE PYROTECH", 105, 10, { align: "center" });
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont(undefined, "normal");
+      doc.text("CRACKERS • FIREWORKS", 105, 17, { align: "center" });
+
+      doc.setTextColor(23, 37, 84);
+      doc.setFontSize(15);
+      doc.setFont(undefined, "bold");
+      doc.text("ESTIMATE", 105, 36, { align: "center" });
+
+      doc.setFontSize(11);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(0, 0, 0);
+      doc.text("To: " + customer, 14, 47);
+      doc.text("Address: " + address, 14, 54);
+      doc.text("Estimate No: " + invoiceNo, 150, 47);
+      doc.text("Date: " + today, 150, 55);
+
+      // Build table data
+      let rows = [];
+      let table = document.getElementById("invoiceTable");
+      for (let i = 1; i < table.rows.length; i++) {
+        let cells = table.rows[i].cells;
+        let productName = cells[0].children[0].value;
 
         rows.push([
-
-            i,
-
-            products[
-                productName
-            ]?.name ||
-            cells[1]
-            .children[0]
-            .options[
-                cells[1]
-                .children[0]
-                .selectedIndex
-            ].text,
-
-            cells[2]
-            .children[0]
-            .value,
-
-            cells[3].innerText,
-
-            cells[4].innerText,
-
-            cells[5].innerText,
-
-            cells[6].innerText
-
+          i,
+          productName,
+          cells[1].children[0].value,
+          cells[2].innerText,
+          cells[3].innerText,
+          cells[4].innerText,
+          cells[5].innerText
         ]);
+      }
 
-    }
-
-    // ----------------------------------------------------------
-    // PDF TABLE
-    // ----------------------------------------------------------
-
-    doc.autoTable({
-
-        head: [[
-            "S.No",
-            "Product",
-            "Qty",
-            "Rate",
-            "Discount",
-            "Final Rate",
-            "Total"
-        ]],
-
+      // Table
+      doc.autoTable({
+        head: [["S.No", "Product", "Qty", "Rate", "Discount", "Final Rate", "Total"]],
         body: rows,
-
         startY: 64,
-
         theme: "grid",
-
         headStyles: {
-
-            fillColor: [
-                23,
-                37,
-                84
-            ],
-
-            textColor: [
-                255,
-                255,
-                255
-            ],
-
-            fontStyle: "bold",
-
-            halign: "center"
-
+          fillColor: [23, 37, 84],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center"
         },
-
         bodyStyles: {
-
-            textColor: [
-                23,
-                32,
-                51
-            ]
-
+          textColor: [23, 32, 51]
         },
-
         alternateRowStyles: {
-
-            fillColor: [
-                248,
-                250,
-                252
-            ]
-
+          fillColor: [248, 250, 252]
         },
-
         styles: {
-
-            lineColor: [
-                203,
-                213,
-                225
-            ],
-
-            lineWidth: 0.2,
-
-            fontSize: 8
-
+          lineColor: [203, 213, 225],
+          lineWidth: 0.2,
+          fontSize: 8
         }
+      });
 
-    });
+      let finalY = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.setTextColor(23, 37, 84);
+      doc.setFont(undefined, "bold");
+      doc.text("Sub Total: " + grandTotal, 140, finalY);
+      doc.setFont(undefined, "normal");
+      doc.text("Discount: 90%", 140, finalY + 8);
+      doc.text("Packing: 0", 140, finalY + 16);
 
-    // ----------------------------------------------------------
-    // TOTALS
-    // ----------------------------------------------------------
+      // Highlight Net Amount
+      doc.setFillColor(239, 246, 255);
+      doc.roundedRect(136, finalY + 19, 60, 10, 2, 2, "F");
+      doc.setTextColor(23, 37, 84);
+      doc.setFont(undefined, "bold");
+      doc.text("Net Amount: " + grandTotal, 140, finalY + 26);
 
-    let finalY =
-        doc.lastAutoTable.finalY + 10;
-
-    doc.setFontSize(12);
-
-    doc.setTextColor(
-        23,
-        37,
-        84
-    );
-
-    doc.setFont(
-        undefined,
-        "bold"
-    );
-
-    doc.text(
-        "Sub Total: " + grandTotal,
-        140,
-        finalY
-    );
-
-    doc.setFont(
-        undefined,
-        "normal"
-    );
-
-    doc.text(
-        "Discount: 90%",
-        140,
-        finalY + 8
-    );
-
-    doc.text(
-        "Packing: 0",
-        140,
-        finalY + 16
-    );
-
-    // ----------------------------------------------------------
-    // NET AMOUNT HIGHLIGHT
-    // ----------------------------------------------------------
-
-    doc.setFillColor(
-        239,
-        246,
-        255
-    );
-
-    doc.roundedRect(
-        136,
-        finalY + 19,
-        60,
-        10,
-        2,
-        2,
-        "F"
-    );
-
-    doc.setTextColor(
-        23,
-        37,
-        84
-    );
-
-    doc.setFont(
-        undefined,
-        "bold"
-    );
-
-    doc.text(
-        "Net Amount: " + grandTotal,
-        140,
-        finalY + 26
-    );
-
-    // ----------------------------------------------------------
-    // SAVE PDF
-    // ----------------------------------------------------------
-
-    doc.save(
-        invoiceNo + ".pdf"
-    );
-
-}
-
-// --------------------------------------------------------------
-// SAVE BILL
-// --------------------------------------------------------------
-
-function saveBill() {
-
-    let bill = {
-
-        customer:
-            document.getElementById(
-                "customer"
-            ).value,
-
-        address:
-            document.getElementById(
-                "address"
-            ).value,
-
-        rows: []
-
-    };
-
-    let rows =
-        document.querySelectorAll(
-            "#invoiceTable tbody tr"
-        );
-
-    rows.forEach(row => {
-
-        bill.rows.push({
-
-            product:
-                row.querySelector(
-                    "select"
-                ).value,
-
-            qty:
-                row.querySelector(
-                    "input"
-                ).value
-
-        });
-
-    });
-
-    localStorage.setItem(
-        "skylinePyrotechBill",
-        JSON.stringify(bill)
-    );
-
-    alert(
-        "Bill saved successfully!"
-    );
-
-}
-
-// --------------------------------------------------------------
-// LOAD BILL
-// --------------------------------------------------------------
-
-function loadBill() {
-
-    let saved =
-        localStorage.getItem(
-            "skylinePyrotechBill"
-        );
-
-    if (!saved) {
-
-        alert(
-            "No saved bill found!"
-        );
-
-        return;
-
+      doc.save(invoiceNo + ".pdf");
     }
 
-    let bill =
-        JSON.parse(saved);
+    // -------- SAVE BILL TO LOCALSTORAGE ----------
+    function saveBill() {
+      let invoiceNo = generateInvoiceNumber();
+      let customer = document.getElementById("customer").value;
+      let address = document.getElementById("address").value;
+      let grandTotal = document.getElementById("grandTotal").innerText;
 
-    document.getElementById(
-        "customer"
-    ).value =
-        bill.customer || "";
+      let items = [];
+      let table = document.getElementById("invoiceTable");
+      for (let i = 1; i < table.rows.length; i++) {
+        let cells = table.rows[i].cells;
+        let sel = cells[0].children[0];
+        items.push({
+          name: sel.value,
+          qty: cells[1].children[0].value
+        });
+      }
 
-    document.getElementById(
-        "address"
-    ).value =
-        bill.address || "";
+      let bill = { invoiceNo, customer, address, grandTotal, items };
 
-    let tbody =
-        document.querySelector(
-            "#invoiceTable tbody"
-        );
+      let saved = JSON.parse(localStorage.getItem("bills") || "[]");
+      saved.push(bill);
+      localStorage.setItem("bills", JSON.stringify(saved));
 
-    tbody.innerHTML = "";
+      alert("Bill saved!");
+      loadSavedBills();
+    }
 
-    bill.rows.forEach(item => {
+    function loadSavedBills() {
+      let saved = JSON.parse(localStorage.getItem("bills") || "[]");
+      let select = document.getElementById("savedBills");
+      select.innerHTML = `<option value="">-- Select a saved bill --</option>`;
+      saved.forEach(b => {
+        select.innerHTML += `<option value="${b.invoiceNo}">${b.invoiceNo} - ${b.customer}</option>`;
+      });
+    }
 
-        let table =
-            document.getElementById(
-                "invoiceTable"
-            );
+    function loadBill(invoiceNo) {
+      if (!invoiceNo) return;
+      let saved = JSON.parse(localStorage.getItem("bills") || "[]");
+      let bill = saved.find(b => b.invoiceNo == invoiceNo);
+      if (!bill) return;
 
-        let row =
-            table
-            .getElementsByTagName(
-                "tbody"
-            )[0]
-            .insertRow();
+      document.getElementById("customer").value = bill.customer;
+      document.getElementById("address").value = bill.address;
 
-        let index =
-            table
-            .getElementsByTagName(
-                "tbody"
-            )[0]
-            .rows.length;
+      // Clear table
+      let table = document.getElementById("invoiceTable");
+      while (table.rows.length > 1) {
+        table.deleteRow(1);
+      }
 
-        let productOptions = "";
+      bill.items.forEach(it => addRow(it));
+      updateGrandTotal();
+    }
 
-        products.forEach(
-            (p, i) => {
-
-                productOptions +=
-                    `<option value="${i}">
-                        ${p.name}
-                    </option>`;
-
-            }
-        );
-
-        row.innerHTML = `
-
-            <td>${index}</td>
-
-            <td>
-
-                <select onchange="updateRow(this)">
-
-                    ${productOptions}
-
-                </select>
-
-            </td>
-
-            <td>
-
-                <input
-                    type="number"
-                    value="${item.qty}"
-                    min="1"
-                    onchange="updateRow(this)"
-                >
-
-            </td>
-
-            <td class="rate">
-                0.00
-            </td>
-
-            <td class="discount">
-                90%
-            </td>
-
-            <td class="finalRate">
-                0.00
-            </td>
-
-            <td class="rowTotal">
-                0.00
-            </td>
-
-            <td>
-
-                <button
-                    class="btn-remove"
-                    onclick="removeRow(this)"
-                >
-                    Remove
-                </button>
-
-            </td>
-
-        `;
-
-        row.querySelector(
-            "select"
-        ).value =
-            item.product;
-
-        updateRow(
-            row.querySelector(
-                "select"
-            )
-        );
-
-    });
-
-    updateTotal();
-
-}
-
-</script>
-
+    // Load bills on page start
+    window.onload = loadSavedBills;
+  </script>
+</div></div>
 </body>
 </html>
